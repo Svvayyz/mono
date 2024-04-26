@@ -8,6 +8,10 @@ public:
 		return MonoAssemblyGetName(m_pAssembly)->name;
 	}
 
+	CMonoImage* GetImage() {
+
+	}
+
 private:
 	MonoAssembly* m_pAssembly = nullptr;
 

@@ -1,22 +1,22 @@
 class CMonoStaticField : CMonoObject {
 public:
-	MonoDomain* m_pDomain;
-	MonoClass* m_pKlass;
 	CMonoField* m_cField;
+	MonoClass* m_pKlass;
+	MonoDomain* m_pAppDomain;
 
 	CMonoStaticField(
-		MonoDomain* pDomain,
+		CMonoField* cField,
 		MonoClass* pKlass,
-		CMonoField* cField
+		MonoDomain* pAppDomain
 	) {
-		m_pDomain = pDomain;
-		m_pKlass = pKlass;
 		m_cField = cField;
+		m_pKlass = pKlass;
+		m_pAppDomain = pAppDomain;
 	}
 
 	void Set(void* vValue) {
 		uintptr_t nAddress = (uintptr_t)MonoVTableGetStaticFieldData(
-			m_pDomain,
+			m_pAppDomain,
 			m_pKlass
 		);
 		uintptr_t nOffset = m_cField->GetOffset();
@@ -28,7 +28,7 @@ public:
 	template<typename T>
 	T Get() {
 		uintptr_t nAddress = (uintptr_t)MonoVTableGetStaticFieldData(
-			m_pDomain,
+			m_pAppDomain,
 			m_pKlass
 		);
 		uintptr_t nOffset = m_cField->GetOffset();

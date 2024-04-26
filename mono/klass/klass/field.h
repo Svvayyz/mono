@@ -1,17 +1,14 @@
 class CMonoField : CMonoObject {
 public:
-	MonoClassField* m_pField = nullptr;
 	MonoObject* m_pKlassInstance = nullptr;
+	MonoClassField* m_pField = nullptr;
 
 	CMonoField(
-		MonoClassField* pField,
-		MonoObject* pKlassInstance
+		MonoObject* pKlassInstance,
+		MonoClassField* pField
 	) {
-		if (pField == nullptr)
-			throw new std::exception("MonoClassField cant be null!");
-
-		m_pField = pField;
 		m_pKlassInstance = pKlassInstance;
+		m_pField = pField;
 	}
 
 	template<typename T>

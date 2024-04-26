@@ -53,7 +53,8 @@ public:
 	}
 
 	CMonoMethod* GetMethod(std::string szMethodName, int nParamCount = 0) {
-		MonoMethod* pMethod = MonoClassGetMethodFromName(m_pKlass, szMethodName.c_str(), nParamCount);
+		MonoMethod* pMethod = 
+			MonoClassGetMethodFromName(m_pKlass, szMethodName.c_str(), nParamCount);
 
 		return new CMonoMethod(pMethod, m_pKlassInstance);
 	}
@@ -62,20 +63,21 @@ public:
 	}
 
 	CMonoField* GetField(const char* szFieldName) {
-		MonoClassField* pField = MonoClassGetFieldFromName(m_pKlass, szFieldName);
+		MonoClassField* pField = 
+			MonoClassGetFieldFromName(m_pKlass, szFieldName);
 
 		CMonoField* cField =
 			new CMonoField(
-				pField,
-				m_pKlassInstance
+				this->m_pKlassInstance,
+				pField
 			);
 		return cField;
 	}
 	CMonoStaticField* GetStaticField(const char* szFieldName) {
 		return new CMonoStaticField(
-			m_pAppDomain,
-			m_pKlass,
-			GetField(szFieldName)
+			this->GetField(szFieldName),
+			this->m_pKlass,
+			this->m_pAppDomain
 		);
 	}
 
@@ -89,8 +91,8 @@ public:
 
 		while (MonoClassField* pField = MonoClassGetFields(m_pKlass, &iter)) {
 			CMonoField* field = new CMonoField(
-				pField,
-				m_pKlassInstance
+				this->m_pKlassInstance,
+				pField
 			);
 
 			const char* xd = field->GetName();

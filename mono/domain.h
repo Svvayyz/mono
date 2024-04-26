@@ -1,11 +1,27 @@
 class CMonoDomain : CMonoObject {
 public:
+	MonoDomain* m_pDomain = nullptr;
+	CMonoThread* m_pThread = nullptr;
+
 	CMonoDomain() {
 		m_pDomain = MonoGetRootDomain();
-	}
+		m_pThread = new CMonoThread(
+			m_pDomain
+		);
 
+		Attach();
+	}
 	CMonoDomain(MonoDomain* pDomain) {
 		m_pDomain = pDomain;
+		m_pThread = new CMonoThread(
+			m_pDomain
+		);
+
+		Attach();
+	}
+
+	void Attach() {
+		m_pThread->Attach();
 	}
 
 	const char* GetFriendlyName() {
@@ -41,8 +57,6 @@ public:
 	}
 
 private:
-	MonoDomain* m_pDomain = nullptr;
-
 	IMPORT(MonoGetRootDomain, tMonoGetRootDomain, MONO_DLL, "mono_get_root_domain");
 
 	IMPORT(MonoDomainGetFriendlyName, tMonoDomainGetFriendlyName, MONO_DLL, "mono_domain_get_friendly_name");

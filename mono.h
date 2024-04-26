@@ -6,11 +6,13 @@
 #include "mono/types/error.h"
 #include "mono/types/string.h"
 
+#include "mono/klass/klass.h"
+
+#include "mono/thread.h"
+
 #include "mono/image.h"
 #include "mono/assembly.h"
 #include "mono/domain.h"
-
-#include "mono/klass/klass.h"
 
 class CMono : CMonoObject {
 public:
@@ -18,40 +20,27 @@ public:
 		this->Initialize();
 	}
 
+	CMonoDomain* RootDomain = nullptr;
+
 	CMonoKlass* GetClass(
 		const char* szClassName,
 		const char* szNameSpace = "",
 		const char* szAssemblyName = "Assembly-CSharp"
 	) {
-		auto pImage = this->GetImage(szAssemblyName);
+		auto image = this->GetImage(szAssemblyName);
 
-		auto pClass =
-			MonoClassFromName(
-				pImage,
-				szNameSpace,
-				szClassName
-			);
-
-		std::cout << "[+] Found " << szAssemblyName << "'s class " << szClassName << " at 0x" << (uintptr_t)pClass << std::endl;
-
-		CMonoKlass* klass = new CMonoKlass(
-			pClass,
-			MonoGetRootDomain()
+		return image->GetKlass(
+			szNameSpace,
+			szClassName
 		);
-		return klass;
 	}
 
-private:
 	MonoAssembly* GetAssembly(
 		const char* szAssemblyName
 	) {
-		auto pDomain = std::make_unique<CMonoDomain>();
-
-		std::cout << "[+] Found " << pDomain->GetFriendlyName() << " (" << pDomain->GetId() << ")" << std::endl;
-
-		return pDomain->OpenAssembly(szAssemblyName);
+		return RootDomain->OpenAssembly(szAssemblyName);
 	}
-	MonoImage* GetImage(
+	CMonoImage* GetImage(
 		const char* szAssemblyName
 	) {
 		auto pImage = MonoImageLoaded(szAssemblyName);
@@ -60,22 +49,19 @@ private:
 				this->GetAssembly(szAssemblyName)
 			);
 
-		return pImage;
+		return new CMonoImage(
+			pImage,
+			RootDomain->m_pDomain
+		);
 	}
 
+private:
 	void Initialize() {
-		MonoThreadAttach(MonoGetRootDomain());
-
-		std::cout << "[+] Attached!" << std::endl;
+		RootDomain = new CMonoDomain();
 	}
 
 	IMPORT(MonoAssemblyGetImage, tMonoAssemblyGetImage, MONO_DLL, "mono_assembly_get_image");
 	IMPORT(MonoImageLoaded, tMonoImageLoaded, MONO_DLL, "mono_image_loaded");
-
-	IMPORT(MonoClassFromName, tMonoClassFromName, MONO_DLL, "mono_class_from_name");
-
-	IMPORT(MonoThreadAttach, tMonoThreadAttach, MONO_DLL, "mono_thread_attach");
-	IMPORT(MonoGetRootDomain, tMonoGetRootDomain, MONO_DLL, "mono_get_root_domain");
 
 	IMPORT(MonoImageGetTableInfo, tMonoImageGetTableInfo, MONO_DLL, "mono_image_get_table_info");
 	IMPORT(MonoImageGetTableRows, tMonoImageGetTableRows, MONO_DLL, "mono_image_get_table_rows");
